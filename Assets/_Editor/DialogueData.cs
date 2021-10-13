@@ -5,6 +5,7 @@ using UnityEngine;
 public class DialogueData : ScriptableObject
 {
     public string[] dialogues;
+    public string dialogue;
     public string characterName;
     public Sprite portrait;
     public float textSpeed;
