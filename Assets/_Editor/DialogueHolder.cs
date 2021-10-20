@@ -1,14 +1,15 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DialogueHolder : MonoBehaviour
 {
-    public ConversationData _conversationData;
+    public List<DialogueData> dialogues = new List<DialogueData>();
 
     int _currentDialogueIndex = 0;
     void Awake()
     {
-        
+        dialogues.Reverse();
     }
 
     void NextDialogue()
@@ -23,7 +24,7 @@ public class DialogueHolder : MonoBehaviour
 
     void DrawText() 
     {
-        StartCoroutine(TextBuilder(_conversationData.dialogues
+        StartCoroutine(TextBuilder(dialogues
             [_currentDialogueIndex].textSpeed));
     }
 
