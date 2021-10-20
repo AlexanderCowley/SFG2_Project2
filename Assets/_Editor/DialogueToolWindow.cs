@@ -151,19 +151,19 @@ public class DialogueToolWindow : EditorWindow
     {
 
         _dialogueTitleHeader.x = 0;
-        _dialogueTitleHeader.y = (position.height / 8f);
-        _dialogueTitleHeader.width = (position.width / 2);
+        _dialogueTitleHeader.y = (position.height / 8);
+        _dialogueTitleHeader.width = (position.width);
         _dialogueTitleHeader.height = (position.height / 8);
 
         _nameHeader.x = 0;
         _nameHeader.y = position.height / 4;
         _nameHeader.width = (position.width / 4f) * 2;
-        _nameHeader.height = (position.height / 4) * .32f;
+        _nameHeader.height = (position.height / 6f);
 
         _textSpeedHeader.x = 0;
-        _textSpeedHeader.y = (position.height / 3.1f);
+        _textSpeedHeader.y = (position.height / 2.6f);
         _textSpeedHeader.width = (position.width / 4f) * 2;
-        _textSpeedHeader.height = (position.height / 4) * .45f;
+        _textSpeedHeader.height = (position.height / 6);
 
         _portraitHeader.x = 0;
         _portraitHeader.y = position.height / 2.3f;
@@ -180,9 +180,9 @@ public class DialogueToolWindow : EditorWindow
         _BtnSaveHeader.width = (position.width / 2f);
         _BtnSaveHeader.height = position.height / 5f;
 
-        _BtnPrefabHeader.x = position.width / 2;
-        _BtnPrefabHeader.y = position.height / 2;
-        _BtnPrefabHeader.width = position.width / 2;
+        _BtnPrefabHeader.x = position.height /0.93f;
+        _BtnPrefabHeader.y = position.width / 2.68f;
+        _BtnPrefabHeader.width = position.width / 1.9f;
         _BtnPrefabHeader.height = position.height / 5f;
 
 
@@ -198,9 +198,9 @@ public class DialogueToolWindow : EditorWindow
     void DrawConversationLayout()
     {
         _prefabHeader.x = position.width / 2;
-        _prefabHeader.y = (position.height / 8);
+        _prefabHeader.y = (position.height / 4);
         _prefabHeader.width = (position.width / 4f) * 2;
-        _prefabHeader.height = (position.height / 12);
+        _prefabHeader.height = (position.height / 1.8f);
 
         GUI.DrawTexture(_prefabHeader, _prefabHeaderTexture);
     }
@@ -303,11 +303,13 @@ public class DialogueToolWindow : EditorWindow
     {
         GUILayout.BeginArea(_prefabHeader);
         GUILayout.BeginHorizontal();
+        GUILayout.BeginVertical();
 
         GUILayout.Label("Prefab:");
         _dialogueData.prefab = (GameObject)EditorGUILayout.ObjectField
             (_dialogueData.prefab, typeof(GameObject), false);
 
+        GUILayout.EndVertical();
         GUILayout.EndHorizontal();
         GUILayout.EndArea();
     }
