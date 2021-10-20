@@ -10,6 +10,11 @@ public class DialogueToolWindow : EditorWindow
     Rect _textSpeedHeader;
     Rect _BtnSaveHeader;
     Rect _prefabHeader;
+    Rect _dialogueTitleHeader;
+
+    Rect _BtnConversationHeader;
+
+    GUISkin _skin;
 
     Texture2D _headerSectionTexture;
     Texture2D _textHeaderTexture;
@@ -17,6 +22,9 @@ public class DialogueToolWindow : EditorWindow
     Texture2D _nameHeaderTexture;
     Texture2D _textSpeedHeaderTexture;
     Texture2D _BtnSaveHeaderTexture;
+    Texture2D _dialogueTitleHeaderTexture;
+
+    Texture2D _BtnConversationHeaderTexture;
     Texture2D _prefabHeaderTexture;
 
     Color _headerSectionColor = new Color(13f / 255f, 32f / 255f, 44f / 255f, 1f);
@@ -26,13 +34,18 @@ public class DialogueToolWindow : EditorWindow
     Color _textSpeedHeaderColor = new Color(50f / 255f, 67f / 255f, 23f / 255f, 1f);
     Color _BtnSaveHeaderColor = new Color(25f / 255f, 88f / 255f, 114f / 255f, 1f);
     Color _prefabHeaderColor = new Color(67f / 255f, 12f / 255f, 120f / 255f, 1f);
+    Color _dialogueTitleHeaderColor = 
+        new Color(63f / 255f, 98f / 255f, 63f / 255f, 1f);
 
-    static DialogueData _data;
+    Color _BtnConversationHeaderColor = new Color(33f / 255f, 10f / 255f, 115f / 255f, 1f);
+
+    static ConversationData _conversationData;
+    static DialogueData _dialogueData;
 
     int DataCharacterIndex = 0;
 
-    public static DialogueData DialogueData {get {return _data;}}
-
+    public static DialogueData DialogueData {get {return _dialogueData;}}
+    public static ConversationData ConversationData { get { return _conversationData; } }
 
     [MenuItem("Window/Dialogue Tool")]
     static void OpenWindow()
@@ -48,6 +61,7 @@ public class DialogueToolWindow : EditorWindow
     {
         InitTextures();
         InitData();
+        _skin = Resources.Load<GUISkin>("GUISkins/DialogueToolSkin");
     }
 
     private void OnGUI()
@@ -58,16 +72,42 @@ public class DialogueToolWindow : EditorWindow
 
     public static void InitData()
     {
-        _data = (DialogueData)ScriptableObject.CreateInstance(typeof(DialogueData));
+        _dialogueData = (DialogueData)ScriptableObject.
+            CreateInstance(typeof(DialogueData));
+
+        _conversationData = (ConversationData)ScriptableObject.
+            CreateInstance(typeof(ConversationData));
     }
+
 
     void InitTextures()
     {
-        //CHANGE TO ASSETDATABASE AS A SOURCE FOR TEXTURES
-        _headerSectionTexture = new Texture2D(1, 1);
-        _headerSectionTexture.SetPixel(0,0, _headerSectionColor);
-        _headerSectionTexture.Apply();
+        InitWindowsTextures();
 
+        InitDialogueTextures();
+        InitConversationTextures();
+    }
+
+    private void InitWindowsTextures()
+    {
+        _headerSectionTexture = new Texture2D(1, 1);
+        _headerSectionTexture.SetPixel(0, 0, _headerSectionColor);
+        _headerSectionTexture.Apply();
+    }
+
+    private void InitConversationTextures()
+    {
+        _BtnConversationHeaderTexture = new Texture2D(1, 1);
+        _BtnConversationHeaderTexture.SetPixel(1, 1, _BtnConversationHeaderColor);
+        _BtnConversationHeaderTexture.Apply();
+
+        _prefabHeaderTexture = new Texture2D(1, 1);
+        _prefabHeaderTexture.SetPixel(1, 1, _prefabHeaderColor);
+        _prefabHeaderTexture.Apply();
+    }
+
+    void InitDialogueTextures()
+    {
         _textHeaderTexture = new Texture2D(1, 1);
         _textHeaderTexture.SetPixel(0, 1, _textHeaderColor);
         _textHeaderTexture.Apply();
@@ -76,7 +116,7 @@ public class DialogueToolWindow : EditorWindow
         _nameHeaderTexture.SetPixel(1, 0, _nameHeaderColor);
         _nameHeaderTexture.Apply();
 
-        _portraitHeaderTexture = new Texture2D(1 ,1);
+        _portraitHeaderTexture = new Texture2D(1, 1);
         _portraitHeaderTexture.SetPixel(1, 1, _portraitHeaderColor);
         _portraitHeaderTexture.Apply();
 
@@ -88,179 +128,263 @@ public class DialogueToolWindow : EditorWindow
         _BtnSaveHeaderTexture.SetPixel(2, 2, _BtnSaveHeaderColor);
         _BtnSaveHeaderTexture.Apply();
 
-        _prefabHeaderTexture = new Texture2D(1, 1);
-        _prefabHeaderTexture.SetPixel(1, 1, _BtnSaveHeaderColor);
-        _prefabHeaderTexture.Apply();
+        _dialogueTitleHeaderTexture = new Texture2D(1, 1);
+        _dialogueTitleHeaderTexture.SetPixel(1, 1, _dialogueTitleHeaderColor);
+        _dialogueTitleHeaderTexture.Apply();
     }
 
     void DrawLayouts()
     {
+        DrawHeaderLayout();
+        DrawDialogueLayout();
+        DrawConversationLayout();
+    }
+
+    void DrawHeaderLayout()
+    {
         _sectionHeader.x = 0;
         _sectionHeader.y = 0;
         _sectionHeader.width = position.width;
-        _sectionHeader.height = 38;
-
-        _nameHeader.x = 0;
-        _nameHeader.y = position.height / 8;
-        _nameHeader.width = (position.width / 4f) * 2;
-        _nameHeader.height = (position.height / 4) - 50;
-
-        _textHeader.x = 0;
-        _textHeader.y = position.width/4;
-        _textHeader.width = (position.width / 4f) * 2;
-        _textHeader.height = position.height - 50;
-
-        _portraitHeader.x = 0;
-        _portraitHeader.y = position.height/5;
-        _portraitHeader.width = (position.width / 4f) * 2;
-        _portraitHeader.height = (position.height / 4) - 50;
-
-        _textSpeedHeader.x = 0;
-        _textSpeedHeader.y = (position.height/3) - 15;
-        _textSpeedHeader.width = (position.width / 4f) * 2;
-        _textSpeedHeader.height = (position.height/4) - 30;
-
-        _BtnSaveHeader.x = (position.width / 4f) * 3;
-        _BtnSaveHeader.y = ((position.height / 4f) * 3) + 25;
-        _BtnSaveHeader.width = (position.width / 4f);
-        _BtnSaveHeader.height = position.height - 255;
-
-        _prefabHeader.x = (position.width / 6f) * 3;
-        _prefabHeader.y = (position.height / 5f);
-        _prefabHeader.width = (position.width / 4f) * 2;
-        _prefabHeader.height = (position.height / 4) - 50;
-
+        _sectionHeader.height = (position.height / 8);
 
         GUI.DrawTexture(_sectionHeader, _headerSectionTexture);
+    }
+
+    void DrawDialogueLayout()
+    {
+
+        _dialogueTitleHeader.x = 0;
+        _dialogueTitleHeader.y = (position.height / 8f);
+        _dialogueTitleHeader.width = (position.width / 2);
+        _dialogueTitleHeader.height = (position.height / 8);
+
+        _nameHeader.x = 0;
+        _nameHeader.y = position.height / 4;
+        _nameHeader.width = (position.width / 4f) * 2;
+        _nameHeader.height = (position.height / 4) * .32f;
+
+        _textSpeedHeader.x = 0;
+        _textSpeedHeader.y = (position.height / 3.1f);
+        _textSpeedHeader.width = (position.width / 4f) * 2;
+        _textSpeedHeader.height = (position.height / 4) * .45f;
+
+        _portraitHeader.x = 0;
+        _portraitHeader.y = position.height / 2.3f;
+        _portraitHeader.width = (position.width / 4f) * 2;
+        _portraitHeader.height = (position.height / 8);
+
+        _textHeader.x = 0;
+        _textHeader.y = position.height / 1.8f;
+        _textHeader.width = (position.width / 2);
+        _textHeader.height = position.height / 4;
+
+        _BtnSaveHeader.x = 0;
+        _BtnSaveHeader.y = ((position.height / 1.24f));
+        _BtnSaveHeader.width = (position.width / 2f);
+        _BtnSaveHeader.height = position.height / 5f;
         GUI.DrawTexture(_nameHeader, _nameHeaderTexture);
         GUI.DrawTexture(_textHeader, _textHeaderTexture);
         GUI.DrawTexture(_portraitHeader, _portraitHeaderTexture);
         GUI.DrawTexture(_textSpeedHeader, _textSpeedHeaderTexture);
         GUI.DrawTexture(_BtnSaveHeader, _BtnSaveHeaderTexture);
+        GUI.DrawTexture(_dialogueTitleHeader, _dialogueTitleHeaderTexture);
+    }
+
+    void DrawConversationLayout()
+    {
+        _BtnConversationHeader.x = position.width / 2;
+        _BtnConversationHeader.y = position.height / 2;
+        _BtnConversationHeader.width = position.width / 2;
+        _BtnConversationHeader.height = position.height / 2;
+
+        _prefabHeader.x = position.width / 2;
+        _prefabHeader.y = (position.height / 8);
+        _prefabHeader.width = (position.width / 4f) * 2;
+        _prefabHeader.height = (position.height / 12);
+
+        GUI.DrawTexture(_BtnConversationHeader, _BtnConversationHeaderTexture);
         GUI.DrawTexture(_prefabHeader, _prefabHeaderTexture);
     }
 
     void DrawSections()
     {
         DrawToolHeaderSection();
-        DrawTextSection();
+
+        DrawDialogueDataSections();
+        DrawConversationDataSections();
+    }
+
+    void DrawDialogueDataSections()
+    {
+        DrawDialogueTitleSection();
 
         DrawNameSection();
         DrawPortraitSection();
         DrawTextSpeedSection();
+        DrawTextSection();
+
         DrawSaveBTNSection();
+    }
+
+    void DrawConversationDataSections()
+    {
         DrawPrefabSection();
-    }
-
-    private void DrawPortraitSection()
-    {
-        GUILayout.BeginArea(_portraitHeader);
-        GUILayout.BeginHorizontal();
-
-        GUILayout.Label("Portrait: ");
-        _data.portrait = (Sprite)EditorGUILayout.ObjectField(_data.portrait, typeof(Sprite), false);
-
-        GUILayout.EndHorizontal();
-        GUILayout.EndArea();
-    }
-
-    private void DrawTextSection()
-    {
-        GUILayout.BeginArea(_textHeader);
-        GUILayout.BeginVertical();
-
-        GUILayout.Label("Text Editor");
-         _data.dialogue = (string)EditorGUILayout.TextArea(_data.dialogue, CustomTextAreaStyle.TextAreaStyle);
-
-        GUILayout.EndVertical();
-        GUILayout.EndArea();
+        DrawSaveBTNConversationSection();
     }
 
     private void DrawToolHeaderSection()
     {
         GUILayout.BeginArea(_sectionHeader);
 
-        GUILayout.Label("Dialogue Tool");
+        GUILayout.Label("Dialogue Tool", _skin.GetStyle("WindowHeader"));
 
         GUILayout.EndArea();
     }
 
-    private void DrawNameSection()
+    private void DrawDialogueTitleSection()
+    {
+        GUILayout.BeginArea(_dialogueTitleHeader);
+        GUILayout.BeginVertical();
+
+        GUILayout.Label("Dialogue Title:");
+        _dialogueData.TitleName = (string)EditorGUILayout.TextField(_dialogueData.TitleName);
+
+        GUILayout.EndVertical();
+        GUILayout.EndArea();
+    }
+
+    void DrawNameSection()
     {
         GUILayout.BeginArea(_nameHeader);
-        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.BeginVertical();
 
-        GUILayout.Label("Name: ");
-        EditorGUILayout.TextField(_data.characterName);
+        GUILayout.Label("Character Name:");
+        EditorGUILayout.TextField(_dialogueData.characterName);
 
-        EditorGUILayout.EndHorizontal();
+        EditorGUILayout.EndVertical();
         GUILayout.EndArea();
     }
 
-    private void DrawTextSpeedSection()
+    void DrawPortraitSection()
+    {
+        GUILayout.BeginArea(_portraitHeader);
+        GUILayout.BeginVertical();
+
+        GUILayout.Label("Portrait:");
+        _dialogueData.portrait = (Sprite)EditorGUILayout.
+            ObjectField(_dialogueData.portrait, typeof(Sprite), false);
+
+        GUILayout.EndVertical();
+        GUILayout.EndArea();
+    }
+
+    void DrawTextSection()
+    {
+        GUILayout.BeginArea(_textHeader);
+        GUILayout.BeginVertical();
+
+        GUILayout.Label("Text Editor");
+         _dialogueData.dialogue = (string)EditorGUILayout.TextArea
+            (_dialogueData.dialogue, CustomTextAreaStyle.TextAreaStyle);
+
+        GUILayout.EndVertical();
+        GUILayout.EndArea();
+    }
+
+    void DrawTextSpeedSection()
     {
         GUILayout.BeginArea(_textSpeedHeader);
         GUILayout.BeginHorizontal();
 
-        GUILayout.Label("Text Speed: ");
-        _data.textSpeed = (float)EditorGUILayout.FloatField(_data.textSpeed);
+        GUILayout.Label("Text Speed:");
+
+        _dialogueData.textSpeed = (float)EditorGUILayout.
+            FloatField(_dialogueData.textSpeed);
 
         GUILayout.EndHorizontal();
-
-        GUILayout.BeginVertical();
-
-        GUILayout.EndVertical();
         GUILayout.EndArea();
     }
 
-    private void DrawPrefabSection()
+    void DrawPrefabSection()
     {
         GUILayout.BeginArea(_prefabHeader);
         GUILayout.BeginHorizontal();
 
-        GUILayout.Label("Prefab: ");
-        _data.prefab = (GameObject)EditorGUILayout.ObjectField(_data.prefab, typeof(GameObject), false);
+        GUILayout.Label("Prefab:");
+        _conversationData.prefab = (GameObject)EditorGUILayout.ObjectField
+            (_conversationData.prefab, typeof(GameObject), false);
 
         GUILayout.EndHorizontal();
         GUILayout.EndArea();
     }
 
-    private void DrawSaveBTNSection()
+    void DrawSaveBTNSection()
     {
         GUILayout.BeginArea(_BtnSaveHeader);
         GUILayout.BeginVertical();
 
-        GUILayout.Label("Finish: ");
-        if (_data.dialogue == null || _data.dialogue.Length < 1)
+        GUILayout.Label("Create Dialoge Data:");
+        if (_dialogueData.dialogue == null || _dialogueData.dialogue.Length < 1)
             EditorGUILayout.HelpBox("[Dialogue] must have text before saving!", MessageType.Warning);
-        else if(_data.prefab == null)
-            EditorGUILayout.HelpBox("[Prefab] must have text before saving!", MessageType.Warning);
-        else if (GUILayout.Button("Save Conversation", GUILayout.Height(25)))
-        {
-            SaveData();
-        }
+
+        else if (_dialogueData.TitleName == null || _dialogueData.TitleName.Length < 1)
+            EditorGUILayout.HelpBox("[Title Name] must be filled in before saving!", MessageType.Warning);
+
+        else if (GUILayout.Button("Save Dialogue Data", GUILayout.Height(25), GUILayout.Width(150)))
+            SaveDialogueData();
 
         GUILayout.EndVertical();
         GUILayout.EndArea();
     }
 
-    void SaveData()
+    void DrawSaveBTNConversationSection()
+    {
+        GUILayout.BeginArea(_BtnConversationHeader);
+        GUILayout.BeginVertical();
+
+        GUILayout.Label("Create Dialoge Data:");
+
+        if (_conversationData.ConversationTitle == null || _conversationData.ConversationTitle.Length < 1)
+            EditorGUILayout.HelpBox("[Title Name] must be filled in before saving!", MessageType.Warning);
+
+        else if(_conversationData.dialogues == null || _conversationData.dialogues.Count < 1)
+            EditorGUILayout.HelpBox("Must have at least one instance of [DialogueData] before saving!", 
+                MessageType.Warning);
+
+        else if (GUILayout.Button("Save Conversation Data", GUILayout.Height(25), GUILayout.Width(150)))
+            SaveConversation();
+
+        GUILayout.EndVertical();
+        GUILayout.EndArea();
+    }
+
+    void SaveDialogueData()
     {
         string dataPath = "Assets/Resources/CharacterData/DialogueData" + 
-            DialogueToolWindow._data.characterName + "_" + 
-            DataCharacterIndex + ".asset";
+            DialogueToolWindow._dialogueData.TitleName + ".asset";
 
-        AssetDatabase.CreateAsset(DialogueToolWindow._data, dataPath);
+        AssetDatabase.CreateAsset(DialogueToolWindow._dialogueData, dataPath);
+        DataCharacterIndex++;
 
-        string newPrefabPath = "Assets/Prefabs/DialogueObjects/" + DialogueToolWindow._data.characterName + "_" +
+        AddToConversationList(DialogueToolWindow._dialogueData);
+    }
+
+    void AddToConversationList(DialogueData dialogueData)
+    {
+        DialogueToolWindow._conversationData.dialogues.Add(dialogueData);
+    }
+
+    void SaveConversation()
+    {
+        string newPrefabPath = "Assets/Prefabs/DialogueObjects/" + DialogueToolWindow._dialogueData.TitleName + "_" +
     DataCharacterIndex + ".prefab";
 
-        string prefabPath = AssetDatabase.GetAssetPath(DialogueToolWindow._data.prefab);
+        if (AssetDatabase.GetAssetPath(_dialogueData) == newPrefabPath)
+            DataCharacterIndex++;
+        string prefabPath = AssetDatabase.GetAssetPath(DialogueToolWindow._conversationData.prefab);
         AssetDatabase.CopyAsset(prefabPath, newPrefabPath);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-
-        DataCharacterIndex++;
 
         GameObject dialoguePrefab = (GameObject)AssetDatabase.
             LoadAssetAtPath(newPrefabPath, typeof(GameObject));
@@ -269,7 +393,9 @@ public class DialogueToolWindow : EditorWindow
             dialoguePrefab.AddComponent(typeof(DialogueHolder));
 
         dialoguePrefab.GetComponent<DialogueHolder>().
-            _dialogueData = DialogueToolWindow._data;
+            _conversationData = DialogueToolWindow._conversationData;
 
+        DialogueToolWindow._conversationData.dialogues.Clear();
+        DataCharacterIndex = 0;
     }
 }

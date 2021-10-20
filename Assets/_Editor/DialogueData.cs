@@ -5,8 +5,6 @@ using UnityEngine;
 public class DialogueData : ScriptableObject
 {
     public string TitleName;
-    public GameObject prefab;
-    public string[] dialogues;
     public string dialogue;
     public string characterName;
     public Sprite portrait;
