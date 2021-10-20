@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEngine;
 using UnityEditor;
 
@@ -43,6 +44,8 @@ public class DialogueToolWindow : EditorWindow
     static DialogueData _dialogueData;
 
     int DataCharacterIndex = 0;
+
+    bool _assetFound;
 
     public static DialogueData DialogueData {get {return _dialogueData;}}
     public static ConversationData ConversationData { get { return _conversationData; } }
@@ -330,8 +333,18 @@ public class DialogueToolWindow : EditorWindow
         else if (_dialogueData.TitleName == null || _dialogueData.TitleName.Length < 1)
             EditorGUILayout.HelpBox("[Title Name] must be filled in before saving!", MessageType.Warning);
 
+        else if(_dialogueData.TitleName == AssetDatabase.GetAssetPath(_dialogueData))
+            EditorGUILayout.HelpBox("[Title Name] needs a different name!", MessageType.Warning);
+
+
         else if (GUILayout.Button("Save Dialogue Data", GUILayout.Height(25), GUILayout.Width(150)))
             SaveDialogueData();
+
+        else if (_assetFound)
+            EditorGUILayout.HelpBox("[Title Name] is not unique! Change it!",
+                MessageType.Warning);
+
+        _assetFound = false;
 
         GUILayout.EndVertical();
         GUILayout.EndArea();
@@ -360,11 +373,17 @@ public class DialogueToolWindow : EditorWindow
 
     void SaveDialogueData()
     {
-        string dataPath = "Assets/Resources/CharacterData/DialogueData" + 
-            DialogueToolWindow._dialogueData.TitleName + ".asset";
+        string dataPath = 
+            $"Assets/Resources/CharacterData/DialogueData/_{DataCharacterIndex}" +
+            $"{DialogueToolWindow._dialogueData.TitleName}.asset";
+
+        if (File.Exists(dataPath))
+        {
+            _assetFound = true;
+            return;
+        }
 
         AssetDatabase.CreateAsset(DialogueToolWindow._dialogueData, dataPath);
-        DataCharacterIndex++;
 
         AddToConversationList(DialogueToolWindow._dialogueData);
     }
@@ -379,7 +398,7 @@ public class DialogueToolWindow : EditorWindow
         string newPrefabPath = "Assets/Prefabs/DialogueObjects/" + DialogueToolWindow._dialogueData.TitleName + "_" +
     DataCharacterIndex + ".prefab";
 
-        if (AssetDatabase.GetAssetPath(_dialogueData) == newPrefabPath)
+        if (File.Exists(newPrefabPath))
             DataCharacterIndex++;
         string prefabPath = AssetDatabase.GetAssetPath(DialogueToolWindow._conversationData.prefab);
         AssetDatabase.CopyAsset(prefabPath, newPrefabPath);
