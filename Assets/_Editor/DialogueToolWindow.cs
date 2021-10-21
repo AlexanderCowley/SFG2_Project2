@@ -37,19 +37,16 @@ public class DialogueToolWindow : EditorWindow
         new Color(63f / 255f, 98f / 255f, 63f / 255f, 1f);
     Color _BtnPrefabHeaderColor = new Color(63f / 255f, 113f / 255f, 200f / 255f, 1f);
 
-    static DialogueData _dialogueData;
+    DialogueData _dialogueData;
 
+    DialogueData _selectedDialogue;
     GameObject _dialoguePrefab;
 
     DialogueHolder _selectedDialogueHolder;
 
     int DataCharacterIndex = 0;
 
-    bool _assetFound;
-
-    string _previousPath;
-
-    public static DialogueData DialogueData {get {return _dialogueData;}}
+    public DialogueData DialogueData {get {return _dialogueData;}}
 
     [MenuItem("Window/Dialogue Tool")]
     static void OpenWindow()
@@ -65,6 +62,8 @@ public class DialogueToolWindow : EditorWindow
     {
         InitTextures();
         InitData();
+        _dialogueData = (DialogueData)ScriptableObject.
+            CreateInstance(typeof(DialogueData));
         _skin = Resources.Load<GUISkin>("GUISkins/DialogueToolSkin");
     }
 
@@ -72,12 +71,19 @@ public class DialogueToolWindow : EditorWindow
     {
         DrawLayouts();
         DrawSections();
+
+        /*Event e = Event.current;
+        if(e.button == 0 & e.isMouse)
+        {
+            DrawLayouts();
+            DrawSections();
+        }*/
     }
 
     public static void InitData()
     {
-        _dialogueData = (DialogueData)ScriptableObject.
-            CreateInstance(typeof(DialogueData));
+        //_dialogueData = (DialogueData)ScriptableObject.
+            //CreateInstance(typeof(DialogueData));
     }
 
 
@@ -106,7 +112,7 @@ public class DialogueToolWindow : EditorWindow
         _nameHeaderTexture.Apply();
 
         _portraitHeaderTexture = new Texture2D(1, 1);
-        _portraitHeaderTexture.SetPixel(1, 1, _portraitHeaderColor);
+        _portraitHeaderTexture.SetPixel(1, 1, _textSpeedHeaderColor);
         _portraitHeaderTexture.Apply();
 
         _textSpeedHeaderTexture = new Texture2D(1, 1);
@@ -320,7 +326,11 @@ public class DialogueToolWindow : EditorWindow
         GUILayout.BeginVertical();
 
         GUILayout.Label("Create Dialoge Data:");
-        if (_dialogueData.dialogue == null || _dialogueData.dialogue.Length < 1)
+
+        if (_selectedDialogueHolder == null)
+            EditorGUILayout.HelpBox("Assign or Create a new [Prefab] before saving!", MessageType.Warning);
+
+        else if (_dialogueData.dialogue == null || _dialogueData.dialogue.Length < 1)
             EditorGUILayout.HelpBox("[Dialogue] must have text before saving!", MessageType.Warning);
 
         else if (_dialogueData.TitleName == null || _dialogueData.TitleName.Length < 1)
@@ -329,17 +339,8 @@ public class DialogueToolWindow : EditorWindow
         else if(_dialogueData.TitleName == AssetDatabase.GetAssetPath(_dialogueData))
             EditorGUILayout.HelpBox("[Title Name] needs a different name!", MessageType.Warning);
 
-        else if(_selectedDialogueHolder == null)
-            EditorGUILayout.HelpBox("Assign or Create a new [Prefab] before saving!", MessageType.Warning);
-
-        else if (_assetFound)
-            EditorGUILayout.HelpBox("[Title Name] is not unique! Change it!",
-                MessageType.Warning);
-
         else if (GUILayout.Button("Save Dialogue Data", GUILayout.Height(25), GUILayout.Width(150)))
             SaveDialogueData();
-
-        _assetFound = false;
 
         GUILayout.EndVertical();
         GUILayout.EndArea();
@@ -358,14 +359,8 @@ public class DialogueToolWindow : EditorWindow
         else if(_dialogueData.prefab == null)
             EditorGUILayout.HelpBox("[Prefab] needs to be selected!", MessageType.Warning);
 
-        else if (_assetFound)
-            EditorGUILayout.HelpBox("[Title Name] is not unique! Change it!",
-                MessageType.Warning);
-
         else if (GUILayout.Button("Create Prefab", GUILayout.Height(25), GUILayout.Width(150)))
             SetNewPrefab();
-
-        _assetFound = false;
 
         GUILayout.EndVertical();
         GUILayout.EndArea();
@@ -373,31 +368,20 @@ public class DialogueToolWindow : EditorWindow
 
     void SaveDialogueData()
     {
-        string dataPath = 
-            $"Assets/Resources/CharacterData/DialogueData/{_selectedDialogueHolder.gameObject.name}_{DataCharacterIndex}.asset";
+        string dataPath = $"Assets/Resources/CharacterData/DialogueData/" +
+            $"{_selectedDialogueHolder.gameObject.name}_{DataCharacterIndex}.asset";
 
-        Debug.Log(_previousPath);
-        Debug.Log(dataPath);
 
-        if (dataPath == _previousPath)
+        _selectedDialogue = (DialogueData)AssetDatabase.LoadAssetAtPath(dataPath, typeof(DialogueData));
+        Debug.Log(_selectedDialogue);
+        if(_selectedDialogue == null)
         {
-            Debug.Log("wrong path");
-            //Add message
-            return;
+            _selectedDialogue = _dialogueData;
+
+            AssetDatabase.CreateAsset(_dialogueData, dataPath);
+            _selectedDialogue = (DialogueData)AssetDatabase.LoadAssetAtPath(dataPath, typeof(DialogueData));
+            _selectedDialogueHolder.dialogues.Add(_selectedDialogue);
         }
-        if(AssetDatabase.GetAssetPath(_dialogueData) != null)
-        {
-            Debug.Log("working");
-            AssetDatabase.CreateAsset(DialogueToolWindow._dialogueData, dataPath);
-        }
-
-        _previousPath = AssetDatabase.GetAssetPath(_dialoguePrefab);
-
-        _dialoguePrefab.GetComponent<DialogueHolder>().
-            dialogues.Add(DialogueToolWindow._dialogueData);
-
-        Debug.Log(_dialoguePrefab.GetComponent<DialogueHolder>().
-            dialogues.Count);
 
         DataCharacterIndex++;
     }
@@ -406,9 +390,9 @@ public class DialogueToolWindow : EditorWindow
     {
         string newPrefabPath = AssetDatabase.GenerateUniqueAssetPath(
             "Assets/Prefabs/DialogueObjects/" + 
-            DialogueToolWindow._dialogueData.TitleName + "_" + ".prefab");
+            _dialogueData.TitleName + "_" + ".prefab");
 
-        string prefabPath = AssetDatabase.GetAssetPath(DialogueToolWindow._dialogueData.prefab);
+        string prefabPath = AssetDatabase.GetAssetPath(_dialogueData.prefab);
 
         AssetDatabase.CopyAsset(prefabPath, newPrefabPath);
         AssetDatabase.SaveAssets();
